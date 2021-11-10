@@ -1,12 +1,13 @@
 "================================================
-" ProjectLink: https://gitee.com/daotoyi
-" Version: 0.1
+" ProjectLink: https://gitee.com/daotoyi/vimrc.git
+" Version: 1.0
 " Email: wenhuas.shi@gmail.com
 " Modify: 2020/10/22
+" Update: 2021/11/06
 "=================================================
 
 " General {{{
-" ============================ general ============================
+" =======================================================================
 augroup ft_vim
     au!
     au FileType vim setlocal foldmethod=marker	"set fdm=marker
@@ -14,7 +15,6 @@ augroup END
 
 autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
-let g:Desk="C:\Users\SWH\Desktop"
 
 let g:mapleader = ','
 set clipboard+=unnamed        " Vim clipboard share with system. 
@@ -27,6 +27,7 @@ filetype plugin indent on
 " base
 set nocompatible                " don't bother with vi compatibility
 set autoread                    " reload files when changed on disk, i.e. via `git checkout`
+set autowriteall			        	" wirte all file when jump other tabs.
 set shortmess=atI
 set magic                       " For regular expressions turn magic on
 set title                       " change the terminal's title
@@ -38,14 +39,20 @@ set t_vb=
 set tm=500
 
 " show location
-set cursorcolumn
+" set cursorcolumn
 set cursorline
 set scrolloff=3                 " keep 3 lines when scrolling at top or button
 
 " show
 set ruler                       " show the current row and column
-set relativenumber              " show line numbers
-set nowrap
+set nu   				        " show line numbers/nu or relativenumbser
+augroup relative_numbser		" auto show number when Enter Insert,relativenumber when leave Insert 
+ autocmd!
+ autocmd InsertEnter * :set norelativenumber
+ autocmd InsertLeave * :set relativenumber
+augroup END
+
+" set nowrap
 set showcmd                     " display incomplete commands
 set showmode                    " display current modes
 set showmatch                   " jump to matches when entering parentheses
@@ -76,7 +83,7 @@ set fillchars+=stl:\ ,stlnc:\
 "}}}
 
 " Formate{{{
-"=======================formate=========================
+" =======================================================================
 " indent
 set autoindent                  " auto indent
 set smartindent                 " smart indent
@@ -97,7 +104,7 @@ fun! ToggleFold()
     if g:FoldMethod == 0
         exe "normal! zM"
         let g:FoldMethod = 1
-    else
+		else
         exe "normal! zR"
         let g:FoldMethod = 0
     endif
@@ -106,8 +113,7 @@ endfun
 "}}}
 
 " Lang && Encoding{{{
-" ========================= encoding ===================================
-"set langmenu=zh_CN.UTF-8 
+" =======================================================================
 
 set encoding=utf-8
 set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1
@@ -116,7 +122,11 @@ set ffs=unix,dos,mac
 set formatoptions+=m
 set formatoptions+=B
 
-language messages zh_CN.utf-8		" handle prompt messages garbled
+if(has("win32") || has("win95") || has("win64") || has("win7") || has("win10"))
+  let g:Desk="C:\Users\SWH\Desktop"
+  "set langmenu=zh_CN.UTF-8 
+  language messages zh_CN.utf-8		" handle prompt messages garbled
+endif
 
 " handle menu garbled in win10 system 
 if(has("win32") || has("win95") || has("win64") || has("win7") || has("win10"))
@@ -127,6 +137,7 @@ endif
 "}}}
 
 " Others {{{
+" =======================================================================
 set selection=inclusive
 set selectmode=mouse,key
 set completeopt=longest,menu
@@ -148,7 +159,7 @@ set mouse=a
 "}}}
 
 " FileType{{{
-" ============================ specific file type ===========================
+" =======================================================================
 
 autocmd FileType python set tabstop=4 shiftwidth=4 expandtab ai
 autocmd FileType ruby set tabstop=2 shiftwidth=2 softtabstop=2 expandtab ai
@@ -174,8 +185,8 @@ autocmd FileType c set omnifunc=ccomplete#Complete
 
 "}}}
 
-" Key Map{{{
-" ============================ key map ============================
+" KeyMapping{{{
+" =======================================================================
 
 " direct key
 map <C-j> <C-W>j
@@ -189,15 +200,16 @@ inoremap <c-k> <up>
 inoremap <c-l> <right>
 
 " <F1> help
-nnoremap <F2> :set nu! nu?<CR>
-nnoremap <F3> :set list! list?<CR>
+"noremap <F2> :TlistToggle<CR>		" set in taglist plugin
+"map <F3> :NERDTreeToggle <CR>		" set in NERDTree plugin
+
 nnoremap <F4> :set wrap! wrap?<CR>
 set pastetoggle=<F5>            "   when in insert mode, press <F5> to go to paste mode,
                                 "     where you can paste mass data that won't be autoindented
 au InsertLeave * set nopaste		
 nnoremap <F6> :exec exists('syntax_on') ? 'syn off' : 'syn on'<CR>		" syntax  highlight on/off
-"noremap <F7> :TlistToggle<CR>		" set in taglist plugin
-"map <F8> :NERDTreeToggle <CR>		" set in NERDTree plugin
+nnoremap <F8> :set nu! nu?<CR>
+nnoremap <F7> :set list! list?<CR>
 nnoremap <F11> :g/^\s*$/d<CR>
 map <F10> :call CompileRunGcc()<CR>
 func! CompileRunGcc()
@@ -254,8 +266,8 @@ vmap <C-c> "+y			" select mode copy
 
 "}}}
 
-"""  AutoSetTilte{{{
-"""===============================================================
+" AutoSetTilte{{{
+" =======================================================================
 autocmd BufNewFile *.cpp,*.[ch],*.sh,*.java exec ":call AutoSetFileHead()" 
 func AutoSetFileHead()  
 	if &filetype == 'sh' 
@@ -302,9 +314,10 @@ func AutoSetFileHead()
 ""    normal o
 endfunc 
 
-"""}}}
+"}}}
 
 " GUI {{{
+" =======================================================================
 
 " menu,tool bar(hidden
 set guioptions-=T             " tool bar show or no;- no 
@@ -319,15 +332,18 @@ au GUIEnter * simalt ~x         " windows maxizise on start
 "set splitright
 set guioptions+=b               " show horizontal ScrollBar
 
-"set guifont=Inconsolata-dz_for_Powerline:h10:cANSI
-set guifont=Inconsolata_NF:h11:W500:cANSI
+" set guifont=monaco:h10
+" set guifont=monaco:h10:W500:cANSI
+" set guifont=Inconsolata-dz_for_Powerline:h10:cANSI
+set guifont=Inconsolata_NF:h11:W500:cANSI "font to show statusline ico.
 
 " }}}
 
-" Theme{{{
-" ============================ theme and status line ============================
+" Theme_statusline{{{
+" =======================================================================
 "set background=dark
-colorscheme desert
+" colorscheme desert
+colorscheme molokai
 "colorscheme Tomorrow-Night
 
 " set mark column color
@@ -338,17 +354,17 @@ hi! link ShowMarksHLu DiffChange
 " }}}
 
 " PythonVim{{{
+" =======================================================================
 "set pythondll=/Users/yggdroot/.python2.7.6/lib/libpython2.7.so
-"set pythondll=
 "set pythonthreedll='D:\\Program\\Files\\JetBrains\\Anaconda3\\python38.dll'
 "set pythonthreedll=python36.dll
 
 "}}}
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"			Vimrc NoPlugin Config Above; Plugin Config Below
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"" VimPlug {{{
-"" ====================== Vim-plug =====================
+" VimPlug {{{
+" =======================================================================
 
 call plug#begin('$VIM/vimfiles/bundle/')
 
@@ -377,16 +393,22 @@ Plug 'https://gitee.com/daotoyi/VimPlugin-gutentags'
 Plug 'https://gitee.com/daotoyi/VimPlugin-indentLine'
 Plug 'https://gitee.com/daotoyi/VimPlugin-showmarks'
 Plug 'https://gitee.com/daotoyi/VimPlugin-ale'
-Plug 'https://gitee.com/daotoyi/VimPlugin-latexSuite'
-
+Plug 'https://gitee.com/daotoyi/vimplugin-fcitx'
+"Plug 'https://gitee.com/daotoyi/fcitx.vim'
+"Plug 'https://gitee.com/daotoyi/VimPlugin-latexSuite'
+Plug 'https://gitee.com/daotoyi/VimPlugin-orgmode'
+Plug 'https://gitee.com/daotoyi/vimplugin-markdown'
+Plug 'https://gitee.com/daotoyi/vimplugin-markdown-preview.nvim'
+Plug 'https://gitee.com/daotoyi/vimplugin-nerdcommenter'
+Plug 'https://gitee.com/daotoyi/vimplugin-asyncrun'
 call plug#end()
 
 "}}}
 
-"""================================= PluginConfig ===================================
+"""===================== PluginConfig ===================================
 
 " TagList {{{
-" ==================== taglist ===========================
+" =======================================================================
 set tags=tags;
 set autochdir
 
@@ -404,16 +426,63 @@ let Tlist_Auto_Open = 1
 let Tlist_Show_One_File=1
 let Tlist_Exit_OnlyWindow=0
 let Tlist_File_Fold_Auto_Close = 1
-let Tlist_Use_Right_Window = 1
+let Tlist_Use_Right_Window = 0
 let Tlist_WinWidth = 30
 let Tlist_Show_Menu=1
 
-noremap <F7> :TlistToggle<CR>
+noremap <F2> :TlistToggle<CR>
 
-""}}}
+"}}}
+
+" Gutentags{{{
+" =======================================================================
+""" https://www.zhihu.com/question/47691414/answer/373700711
+""" https://zhuanlan.zhihu.com/p/36279445
+
+let $GTAGSLABEL = 'native-pygments'
+if(has("win32") || has("win95") || has("win64") || has("win7") || has("win10"))
+	let $GTAGSCONF = 'D:\Program Files (x86)\Vim\gtags\share\gtags\gtags.conf'
+else
+	let $GTAGSCONF = '/usr/bin/gtags'
+endif
+
+"" if not exist ~/.cache/tags directory, mkdir it
+"if !isdirectory(s:vim_tags)
+"   silent! call mkdir(s:vim_tags, 'p')
+"endif
+
+let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+let g:gutentags_ctags_tagfile = '.tags'		" name of data-ile
+
+" support tags && gtags.
+let g:gutentags_modules = []
+if executable('ctags')
+	let g:gutentags_modules += ['ctags']
+endif
+if executable('gtags') && executable('gtags')
+	let g:gutentags_modules += ['gtags']
+endif
+
+" put tags-file to ~/.cache/tags
+let s:vim_tags = expand('~/.cache/tags')
+let g:gutentags_cache_dir = s:vim_tags
+
+" config ctags 
+let g:gutentags_ctags_extra_args = ['--fields=+niazS']
+let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+
+"" can't support Exuberant-ctags
+" let g:gutentags_ctags_extra_args = [ '--extra=+q']
+" let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+
+" forbid auto-update
+let g:gutentags_auto_add_gtags= 0
+
+" }}}
 
 " Netrw {{{
-" ===================== netrw ==========================
+" =======================================================================
 let g:netrw_browse_split = 2	"0: split 1:vsplit 2:new tab 3:pri windows
 let g:netrw_liststyle = 3	"4 model, thin/long/wide/tree
 let g:netrw_banner = 1		"bannre on top, <l>l r
@@ -423,15 +492,26 @@ let g:netrw_winsize = 30	"width 30%
 
 nmap <silent> <leader>fe :Sexplore!<cr>
 
+"}}}
+
+" Nerdcommenter{{{
+" =======================================================================
+let g:NERDSpaceDelims = 1
+let g:NERDDefaultAlign = 'left'
+let g:NERDCustomDelimiters = {
+            \ 'javascript': { 'left': '//', 'leftAlt': '/**', 'rightAlt': '*/' },
+            \ 'less': { 'left': '/**', 'right': '*/' }
+        \ }
 ""}}}
 
-"" NERD_tree {{{
-"" ====================== NERD_tree =======================
+" NERD_tree {{{
+" =======================================================================
 let NERDTreeShowLineNumbers=1
 let NERDTreeAutoCenter=1
 let NERDTreeShowHidden=1				"view hidden file
 let NERDTreeWinSize=30
 let NERDTreeAutoDeleteBuffer = 1
+let g:NERDTreeWinPos='right'
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 let g:nerdtree_tabs_open_on_console_startup=1
@@ -443,42 +523,43 @@ let NERDTreeDirArrows=0   				 " Display arrows instead of ascii art in NERDTree
 let NERDTreeChDirMode=2 				 " Change current working directory based on root directory in NERDTree
 
 ""autocmd vimenter * if !argc()|NERDTree|endif	"auto open nerdtree
-map <F8> :NERDTreeToggle <CR>
+map <F3> :NERDTreeToggle <CR>
 
 ""}}}
 
-"""" NerdDevicons {{{
-""" ====================== NerdDevicons =======================
-""let g:NERDTreeExtensionHighlightColor = {} " this line is needed to avoid error
-""
-""let g:webdevicons_enable_nerdtree = 1
-""let g:webdevicons_conceal_nerdtree_brackets = 1
-""let g:webdevicons_enable_airline_tabline = 1
-""let g:webdevicons_enable_airline_statusline = 1
-"" 
-"""autocmd vimenter * if !argc()|NERDTree|endif		" Open Nerdtree when there's no file opened"
-"""autocmd vimenter * NERDTree		    			" Or, auto-open Nerdtree"
-""	""Close NERDTree when there's no other windows"
-""autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif      
-""	""Customize icons on Nerdtree"
-""let g:NERDTreeDirArrowExpandable = '▸'
-""let g:NERDTreeDirArrowCollapsible = '▾'
-""let g:NERDTreeIndicatorMapCustom = { 
-""        \ "Modified"  : "✹",
-""        \ "Staged"    : "✚",
-""        \ "Untracked" : "✭",
-""        \ "Renamed"   : "➜",
-""        \ "Unmerged"  : "═",
-""        \ "Deleted"   : "✖",
-""        \ "Dirty"     : "✗",
-""        \ "Clean"     : "✔︎",
-""        \ 'Ignored'   : '☒',
-""        \ "Unknown"   : "?"
-""    \ }
-""
-"""}}}
+" NerdDevicons {{{
+" =======================================================================
+"let g:NERDTreeExtensionHighlightColor = {} " this line is needed to avoid error
+"
+"let g:webdevicons_enable_nerdtree = 1
+"let g:webdevicons_conceal_nerdtree_brackets = 1
+"let g:webdevicons_enable_airline_tabline = 1
+"let g:webdevicons_enable_airline_statusline = 1
+" 
+""autocmd vimenter * if !argc()|NERDTree|endif		" Open Nerdtree when there's no file opened"
+""autocmd vimenter * NERDTree		    			" Or, auto-open Nerdtree"
+"	""Close NERDTree when there's no other windows"
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif      
+"	""Customize icons on Nerdtree"
+"let g:NERDTreeDirArrowExpandable = '▸'
+"let g:NERDTreeDirArrowCollapsible = '▾'
+"let g:NERDTreeIndicatorMapCustom = { 
+"        \ "Modified"  : "✹",
+"        \ "Staged"    : "✚",
+"        \ "Untracked" : "✭",
+"        \ "Renamed"   : "➜",
+"        \ "Unmerged"  : "═",
+"        \ "Deleted"   : "✖",
+"        \ "Dirty"     : "✗",
+"        \ "Clean"     : "✔︎",
+"        \ 'Ignored'   : '☒',
+"        \ "Unknown"   : "?"
+"    \ }
+"
+"}}}
 
 " WinManager{{{
+" =======================================================================
 "" ================== winmanager ========================
 "" =========== netrw/NERDTree && taglist ================
 "" ======================================================
@@ -500,7 +581,7 @@ map <F8> :NERDTreeToggle <CR>
 "}}}
 
 " MiniBufExplorer{{{
-" ================== MiniBufExplorer =====================
+" =======================================================================
 let g:miniBufExplMapWindowNavVim = 1 
 let g:miniBufExplMapWindowNavArrows = 1 
 let g:miniBufExplMapCTabSwitchBufs = 1 
@@ -513,13 +594,13 @@ map <F12> :MBEbn<CR>
 
 "}}}
 
-" Airline {{{{
-" ==================== airline =========================
+" Airline {{{
+" =======================================================================
 
 set backspace=2
 
 let g:airline_powerline_fonts = 1
-""let g:airline_theme='molokai'		"good molokai;'zenburn','murmur','papercolor' as well
+let g:airline_theme='molokai'		"good molokai;'zenburn','murmur','papercolor' as well
 
 
 let g:airline#extensions#tabline#enabled = 1			" open tabline
@@ -549,8 +630,8 @@ endif
 
 "}}}
 
-" CompleteCode {{{{
-" ================== omnicppcomplete ====================
+" CompleteCode {{{
+" =======================================================================
 let OmniCpp_NamespaceSearch = 1
 let OmniCpp_GlobalScopeSearch = 1
 let OmniCpp_ShowAccess = 1
@@ -570,7 +651,7 @@ let g:SuperTabDefaultCompletionType="<C-X><C-O>"
 "}}}
 
 " Rainbow_Parentheses{{{
-" ================== rainbow_parentheses ====================
+" =======================================================================
 let g:rbpt_colorpairs = [
     \ ['brown',       'RoyalBlue3'],
     \ ['Darkblue',    'SeaGreen3'],
@@ -595,7 +676,55 @@ let g:rbpt_loadcmd_toggle = 0
 
 "}}}
 
-"" easymotion{{{
+" easymotion{{{
+" =======================================================================
 nmap ss <Plug>(easymotion-s2)
 "" }}}
 
+" asyncrun {{{
+" =======================================================================
+" open quickfix window automaicly，height=6
+let g:asyncrun_open = 6
+
+" bell notify when task over.
+let g:asyncrun_bell = 1
+
+" F10 open/close Quickfix windows
+nnoremap <F10> :call asyncrun#quickfix_toggle(6)<cr>
+" }}}
+
+" ale {{{
+" =======================================================================
+let g:ale_linters_explicit = 1
+let g:ale_completion_delay = 500
+let g:ale_echo_delay = 20
+let g:ale_lint_delay = 500
+let g:ale_echo_msg_format = '[%linter%] %code: %%s'
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_lint_on_insert_leave = 1
+let g:airline#extensions#ale#enabled = 1
+
+let g:ale_c_gcc_options = '-Wall -O2 -std=c99'
+let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
+let g:ale_c_cppcheck_options = ''
+let g:ale_cpp_cppcheck_options = ''
+
+" }}}
+
+"AutoPairs{{{
+" =======================================================================
+let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"'}
+let g:AutoPairs['<']='>'
+let b:AutoPairs = g:AutoPairs
+let g:AutoPairsShortcutToggle = '<M-p>'
+let g:AutoPairsShortcutFastWrap = '<M-e>'
+let g:AutoPairsShortcutJump = '<M-n>'
+let g:AutoPairsShortcutBackInsert = '<M-b>'
+let g:AutoPairsMapBS = 1
+let g:AutoPairsMapCh = 1
+let g:AutoPairsMapCR = 1
+let g:AutoPairsCenterLine = 1
+let g:AutoPairsMapSpace = 1
+let g:AutoPairsFlyMode = 0
+let g:AutoPairsMultilineClose = 1
+"}}}
