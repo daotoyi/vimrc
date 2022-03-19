@@ -39,7 +39,7 @@ call plug#end()
 
 ## 3 Install
 
-```js
+```vimrc
 vim random -nw
 :PlugInstall
 :PlugStatus
